@@ -11,7 +11,7 @@ def hello():
 @app.route('/slack-endpoint', methods=['POST', "GET"])
 def endpoint():
     
-    with open("log.txt", "wb") as f:
+    with open("log.txt", "ab") as f:
         f.write(request.data)
 
     return str(request.data)
