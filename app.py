@@ -14,7 +14,9 @@ pipe = pipeline('text-generation', model="dbmdz/german-gpt2",
 
 @app.route("/")
 def hello():
+    logger.info("Returned static")
     return "Hello, Sebastian!"
+
 
 
 @app.route('/slack-endpoint', methods=['POST', "GET"])
