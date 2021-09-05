@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request
 from transformers import pipeline
 import json
+from loguru import logger
+import sys
+
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 
 app = Flask(__name__)
@@ -15,14 +19,19 @@ def hello():
 
 @app.route('/slack-endpoint', methods=['POST', "GET"])
 def endpoint():
+
+    logger.info("received event")
+    logger.info('recieved data is: {request.data}')
     
     with open("log.txt", "ab") as f:
         f.write(request.data)
+
 
     answer = {
         "text" : "Random Text"
     }
 
+    logger.info("responding with {answer}")
     return jsonify(answer)
         
     #else:
