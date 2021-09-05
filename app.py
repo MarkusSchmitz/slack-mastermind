@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from transformers import pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import json
 from loguru import logger
 import sys
@@ -9,8 +9,8 @@ logger.add("log.txt", format="{time} {level} {message}", filter="my_module", lev
 
 app = Flask(__name__)
 
-pipe = pipeline('text-generation', model="dbmdz/german-gpt2",
-                 tokenizer="dbmdz/german-gpt2")
+tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-large")
+model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-large")
 
 @app.route("/")
 def hello():
@@ -32,6 +32,17 @@ def endpoint():
     answer = {
         "text" : "Random Text"
     }
+
+    new_user_input_ids = tokenizer.encode(request.data["text"] + tokenizer.eos_token, return_tensors='pt')
+
+    # append the new user input tokens to the chat history
+    bot_input_ids = new_user_input_ids
+
+    # generated a response while limiting the total chat history to 1000 tokens, 
+    chat_history_ids = model.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
+
+    # pretty print last ouput tokens from bot
+    answer = ("{}".format(tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)))
 
     logger.info("responding with {answer}")
     return jsonify(answer)
